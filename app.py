@@ -2,7 +2,8 @@
 Deliveroo - Parcel Delivery Management System
 Main application entry point
 """
-
+from flask_restful import Api
+from routes.auth_routes import RegisterResource, LoginResource, MeResource, RefreshResource
 import os
 from dotenv import load_dotenv
 
@@ -13,6 +14,11 @@ from app import create_app, db
 
 # Create Flask application instance
 app = create_app()
+api = Api(app)
+
+app.config["JWT_SECRET_KEY"] = "super-secret-key"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = 86400 * 30  # 30 days
 
 # Flask shell context for easier debugging
 @app.shell_context_processor
@@ -127,6 +133,12 @@ def unauthorized(error):
         'error': 'Unauthorized',
         'message': 'Authentication required'
     }, 401
+
+api.add_resource(RegisterResource, "/auth/register")
+api.add_resource(LoginResource, "/auth/login")
+api.add_resource(MeResource, "/auth/me")
+api.add_resource(RefreshResource, "/auth/refresh")
+
 
 # Run application
 if __name__ == '__main__':

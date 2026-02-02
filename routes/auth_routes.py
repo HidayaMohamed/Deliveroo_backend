@@ -112,3 +112,19 @@ class MeResource(Resource):
             "is_active": user.is_active,
             "created_at": user.created_at.isoformat()
         }, 200
+
+#refresh token endpoint
+class RefreshResource(Resource):
+    @jwt_required(refresh=True)
+    def refresh(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+
+        if not user:
+            return {"message": "User not found"}, 404
+
+        access_token = create_access_token(identity=user)
+
+        return {
+            "access_token": access_token
+        }, 200
