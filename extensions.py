@@ -3,7 +3,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from sqlalchemy import MetaData
 
-# Naming convention for constraints (Alembic-friendly)
+# Naming convention for constraints 
 naming_convention = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
