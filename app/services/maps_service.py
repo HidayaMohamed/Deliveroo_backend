@@ -28,6 +28,14 @@ class MapsService:
             }
         """
         try:
+
+        # Convert tuples to string format if needed
+            if isinstance(origin, tuple):
+                origin = f"{origin[0]},{origin[1]}"
+            if isinstance(destination, tuple):
+                destination = f"{destination[0]},{destination[1]}"
+
+                
             result = self.client.distance_matrix(
                 origins=[origin],
                 destinations=[destination],
