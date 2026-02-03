@@ -28,7 +28,7 @@ def create_app(test_config: dict = None):
     jwt.init_app(app)
 
     # Register resources with Api on this app instance so factory-created apps have routes
-    from routes.auth_routes import RegisterResource, LoginResource, MeResource, RefreshResource
+    from app.routes.auth_routes import RegisterResource, LoginResource, MeResource, RefreshResource
     api = Api(app)
     api.add_resource(RegisterResource, "/auth/register")
     api.add_resource(LoginResource, "/auth/login")
