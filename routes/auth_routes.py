@@ -59,9 +59,13 @@ class RegisterResource(Resource):
             return {"message": "Missing Values", "error": "IntegrityError"}, 422
 
 #POST /auth/login → store access_token, user.role.
+
+login_parser = reqparse.RequestParser()
+login_parser.add_argument("email", type=str, required=True, help="Email is required")
+login_parser.add_argument("password", type=str, required=True, help="Password is required")
 class LoginResource(Resource):
     def post(self):
-        data = register_parser.parse_args()
+        data = login_parser.parse_args()
 
         email = data.get("email")
         password = data.get("password")
@@ -74,6 +78,11 @@ class LoginResource(Resource):
             return jsonify({"error": "Invalid email or password"}), 401
         if not user.is_active:
             return jsonify({"error": "Account is disabled"}), 403
+                # In auth_routes.py, validate phone before DB check if provided:
+        if data.get('phone'):
+            phone = User.query.filter_by(phone=data['phone']).first()
+            if phone:
+                return {"message": "Phone number already taken"}, 422
 
 
         if not user.check_password(password):

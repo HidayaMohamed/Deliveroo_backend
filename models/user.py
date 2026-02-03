@@ -37,6 +37,10 @@ class User(db.Model, SerializerMixin):
     
     @validates("phone")
     def validate_phone(self, key, number):
+        # Skip validation if phone is None or empty
+        if number is None or number == "":
+            return number
+        
         parsed = phonenumbers.parse(number, None)
         is_valid = phonenumbers.is_valid_number(parsed)
 

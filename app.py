@@ -3,7 +3,6 @@ Deliveroo - Parcel Delivery Management System
 Main application entry point
 """
 from flask_restful import Api
-from routes.auth_routes import RegisterResource, LoginResource, MeResource, RefreshResource
 import os
 from dotenv import load_dotenv
 
@@ -15,17 +14,31 @@ from config import Config
 from extensions import db, bcrypt, jwt
 
 
-def create_app():
+def create_app(test_config: dict = None):
     app = Flask(__name__)
+    # Load default config
     app.config.from_object(Config)
+
+    # Apply overrides for testing or other environments
+    if test_config:
+        app.config.update(test_config)
+
     db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
+
+    # Register resources with Api on this app instance so factory-created apps have routes
+    from routes.auth_routes import RegisterResource, LoginResource, MeResource, RefreshResource
+    api = Api(app)
+    api.add_resource(RegisterResource, "/auth/register")
+    api.add_resource(LoginResource, "/auth/login")
+    api.add_resource(MeResource, "/auth/me")
+    api.add_resource(RefreshResource, "/auth/refresh")
+
     return app
 
-# Create Flask application instance
+# Create Flask application instance (used when running directly)
 app = create_app()
-api = Api(app)
 
 app.config["JWT_SECRET_KEY"] = "super-secret-key"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
@@ -144,11 +157,6 @@ def unauthorized(error):
         'error': 'Unauthorized',
         'message': 'Authentication required'
     }, 401
-
-api.add_resource(RegisterResource, "/auth/register")
-api.add_resource(LoginResource, "/auth/login")
-api.add_resource(MeResource, "/auth/me")
-api.add_resource(RefreshResource, "/auth/refresh")
 
 
 # Run application
