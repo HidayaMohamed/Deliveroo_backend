@@ -2,40 +2,15 @@
 Deliveroo - Parcel Delivery Management System
 Main application entry point
 """
-from flask_restful import Api
 import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
-from flask import Flask
-from config import Config
-from extensions import db, bcrypt, jwt
+from app import create_app
+from extensions import db
 
-
-def create_app(test_config: dict = None):
-    app = Flask(__name__)
-    # Load default config
-    app.config.from_object(Config)
-
-    # Apply overrides for testing or other environments
-    if test_config:
-        app.config.update(test_config)
-
-    db.init_app(app)
-    bcrypt.init_app(app)
-    jwt.init_app(app)
-
-    # Register resources with Api on this app instance so factory-created apps have routes
-    from app.routes.auth_routes import RegisterResource, LoginResource, MeResource, RefreshResource
-    api = Api(app)
-    api.add_resource(RegisterResource, "/auth/register")
-    api.add_resource(LoginResource, "/auth/login")
-    api.add_resource(MeResource, "/auth/me")
-    api.add_resource(RefreshResource, "/auth/refresh")
-
-    return app
 
 # Create Flask application instance (used when running directly)
 app = create_app()
@@ -193,3 +168,4 @@ if __name__ == '__main__':
         port=port,
         debug=debug
     )
+
