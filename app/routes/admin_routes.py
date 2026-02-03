@@ -11,7 +11,7 @@ from app.models.user import User
 from app.models.delivery import DeliveryOrder, OrderStatus
 from app.models.order_tracking import OrderTracking
 from app.models.notification import Notification
-from app.auth.decorators import admin_required
+from app.utils.role_gaurds import admin_required
 from app.services.email_service import EmailService
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')

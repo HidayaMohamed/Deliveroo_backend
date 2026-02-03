@@ -11,7 +11,7 @@ from app.models.user import User
 from app.models.delivery import DeliveryOrder, OrderStatus
 from app.models.order_tracking import OrderTracking
 from app.models.notification import Notification
-from app.auth.decorators import courier_required
+from app.utils.role_gaurds import courier_required
 from app.services.email_service import EmailService
 
 courier_bp = Blueprint('courier', __name__, url_prefix='/api/courier')
