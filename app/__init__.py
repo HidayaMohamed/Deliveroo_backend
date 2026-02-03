@@ -20,6 +20,10 @@ def create_app(config_class=Config):
 
     from app.routes.admin_routes import admin_bp
     app.register_blueprint(admin_bp)
+
+     # Register courier routes
+    from app.routes.courier_routes import courier_bp
+    app.register_blueprint(courier_bp)
     
     # Register API resources
     from flask_restful import Api
