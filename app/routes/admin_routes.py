@@ -17,9 +17,7 @@ from app.services.email_service import EmailService
 admin_bp = Blueprint('admin', __name__, url_prefix='/api/admin')
 
 
-# ============================================================================
 # GET ALL ORDERS
-# ============================================================================
 @admin_bp.route('/orders', methods=['GET'])
 @jwt_required()
 @admin_required
@@ -98,9 +96,7 @@ def get_all_orders():
         return jsonify({'error': f'Failed to fetch orders: {str(e)}'}), 500
 
 
-# ============================================================================
 # ASSIGN COURIER TO ORDER
-# ============================================================================
 @admin_bp.route('/orders/<int:order_id>/assign', methods=['PATCH'])
 @jwt_required()
 @admin_required
@@ -207,9 +203,7 @@ def assign_courier(order_id):
         return jsonify({'error': f'Failed to assign courier: {str(e)}'}), 500
 
 
-# ============================================================================
 # GET ADMIN DASHBOARD STATISTICS
-# ============================================================================
 @admin_bp.route('/stats', methods=['GET'])
 @jwt_required()
 @admin_required
@@ -305,9 +299,7 @@ def get_dashboard_stats():
         return jsonify({'error': f'Failed to fetch statistics: {str(e)}'}), 500
 
 
-# ============================================================================
 # UPDATE ORDER STATUS (Admin Override)
-# ============================================================================
 @admin_bp.route('/orders/<int:order_id>/status', methods=['PATCH'])
 @jwt_required()
 @admin_required

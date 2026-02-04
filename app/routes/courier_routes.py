@@ -17,9 +17,7 @@ from app.services.email_service import EmailService
 courier_bp = Blueprint('courier', __name__, url_prefix='/api/courier')
 
 
-# ============================================================================
 # GET ASSIGNED ORDERS
-# ============================================================================
 @courier_bp.route('/orders', methods=['GET'])
 @jwt_required()
 @courier_required
@@ -86,9 +84,7 @@ def get_assigned_orders():
         return jsonify({'error': f'Failed to fetch orders: {str(e)}'}), 500
 
 
-# ============================================================================
 # UPDATE ORDER STATUS
-# ============================================================================
 @courier_bp.route('/orders/<int:order_id>/status', methods=['PATCH'])
 @jwt_required()
 @courier_required
@@ -217,9 +213,7 @@ def update_order_status(order_id):
         return jsonify({'error': f'Failed to update status: {str(e)}'}), 500
 
 
-# ============================================================================
 # UPDATE CURRENT LOCATION
-# ============================================================================
 @courier_bp.route('/orders/<int:order_id>/location', methods=['PATCH'])
 @jwt_required()
 @courier_required
@@ -309,9 +303,7 @@ def update_location(order_id):
         return jsonify({'error': f'Failed to update location: {str(e)}'}), 500
 
 
-# ============================================================================
 # GET SINGLE ORDER DETAILS
-# ============================================================================
 @courier_bp.route('/orders/<int:order_id>', methods=['GET'])
 @jwt_required()
 @courier_required
@@ -357,9 +349,8 @@ def get_order_details(order_id):
         return jsonify({'error': f'Failed to fetch order: {str(e)}'}), 500
 
 
-# ============================================================================
+
 # GET COURIER STATISTICS
-# ============================================================================
 @courier_bp.route('/stats', methods=['GET'])
 @jwt_required()
 @courier_required
