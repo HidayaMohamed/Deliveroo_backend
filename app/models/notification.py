@@ -16,7 +16,7 @@ class Notification(db.Model, SerializerMixin):
 
     # Foreign Keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
-    order_id = db.Column(db.Integer, db.ForeignKey('dlivery_orders.id'), nullable=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('delivery_orders.id'), nullable=True)
 
     # Notis data
     type = db.Column(db.String(50), nullable=False)
@@ -27,8 +27,7 @@ class Notification(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, default = datetime.utcnow)
 
 
-    user = db.relationship('User', backref = 'notifications')
-    order = db.relationship('DeliveryOrder', backref= 'notifications')
+    user = db.relationship('User', backref='notifications')
 
 
     serialize_rules = ('-user.notifications', '-order.notifications')

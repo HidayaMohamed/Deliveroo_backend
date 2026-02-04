@@ -60,7 +60,7 @@ class Payment(db.Model):
     user_agent = db.Column(db.Text)
     
     # Metadata
-    metadata = db.Column(db.JSON)  # For additional payment gateway data
+    payment_metadata = db.Column(db.JSON)  # For additional payment gateway data
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
