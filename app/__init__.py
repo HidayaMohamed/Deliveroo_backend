@@ -5,6 +5,8 @@ from flask_cors import CORS
 from config import Config
 from extensions import db, jwt
 
+
+
 migrate = Migrate()
 mail = Mail()
 
@@ -61,6 +63,9 @@ def create_app(config_class=Config):
     api.add_resource(CourierUpdateStatusResource, "/courier/orders/<int:order_id>/status")
     api.add_resource(CourierUpdateLocationResource, "/courier/orders/<int:order_id>/location")
     api.add_resource(CourierStatsResource, "/courier/stats")
+
+    from app.routes.payment_routes import payments_bp
+    app.register_blueprint(payments_bp)
     
     return app
 
