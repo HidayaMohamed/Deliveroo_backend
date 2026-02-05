@@ -14,6 +14,9 @@ def create_app(config_class=Config):
     
     db.init_app(app)
     migrate.init_app(app, db)
+    
+    # Import models so Alembic can detect them
+    from app import models
     jwt.init_app(app)
     mail.init_app(app)
     CORS(app)

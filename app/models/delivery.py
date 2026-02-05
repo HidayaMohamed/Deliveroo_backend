@@ -24,7 +24,7 @@ class DeliveryOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tracking_number = db.Column(db.String(50), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    courier_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    courier_id = db.Column(db.Integer, db.ForeignKey('courier_profiles.id'))
     
     # Location data
     pickup_lat = db.Column(db.Numeric(10, 8), nullable=False)
