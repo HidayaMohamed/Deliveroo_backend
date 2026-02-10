@@ -57,6 +57,10 @@ class DeliveryOrder(db.Model):
     total_price = db.Column(db.Numeric(10, 2), nullable=False)
     currency = db.Column(db.String(3), default='KES')
     
+    # Current courier location (updated during delivery)
+    current_latitude = db.Column(db.Numeric(10, 8))
+    current_longitude = db.Column(db.Numeric(11, 8))
+
     # Status and timestamps
     status = db.Column(Enum(OrderStatus), default=OrderStatus.PENDING)
     estimated_delivery_time = db.Column(db.DateTime)
