@@ -23,13 +23,9 @@ A RESTful API for a parcel delivery management system built with Flask. Supports
 - [Role-Based Access Control](#role-based-access-control)
 - [Order Status Flow](#order-status-flow)
 
-<<<<<<< HEAD
----
-=======
 2. Configure environment variables in `.env` (see `.env.example` file in repo). At minimum set:
    - `DATABASE_URL` (example: `postgresql://postgres:password@localhost:5432/deliveroo`)
    - `JWT_SECRET_KEY`
->>>>>>> main
 
 ## Tech Stack
 
