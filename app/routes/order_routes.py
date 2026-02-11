@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from app import db
-from app.models.delivery import DeliveryOrder, OrderStatus, WeightCategory
+from app.models.delivery import DeliveryOrder, OrderStatus
 from app.models.order_tracking import OrderTracking
 from app.models.payment import Payment
 from app.models import User, Notification
@@ -226,9 +226,7 @@ def update_destination(order_id):
         return jsonify({'error': 'Destination can only be updated for pending orders'}), 400
     
     # Validate destination data
-    is_valid, validated_data, errors = OrderValidator.validate_update_destination(
-        data, order.status.value
-    )
+    is_valid, validated_data, errors = OrderValidator.validate_update_destination(data)
     
     if not is_valid:
         return jsonify({'errors': errors}), 400

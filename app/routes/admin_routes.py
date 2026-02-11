@@ -3,15 +3,14 @@ Admin Routes - Flask-RESTful Resources
 Handles administrative operations for order management and system statistics
 """
 from flask_restful import Resource, reqparse
-from flask import jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from datetime import datetime, timedelta
 
 from extensions import db
 from app.models.user import User
 from app.models.delivery import DeliveryOrder, OrderStatus
 from app.models.order_tracking import OrderTracking
-# from app.models.notification import Notification
+from app.models.notification import Notification
 from app.utils.role_guards import admin_required
 from app.services.email_service import EmailService
 
@@ -313,8 +312,8 @@ class AdminStatsResource(Resource):
             if delivered_orders:
                 delivery_times = []
                 for order in delivered_orders:
-                    if order.delivered_at and order.created_at:
-                        delta = order.delivered_at - order.created_at
+                    if order.actual_delivery_time and order.created_at:
+                        delta = order.actual_delivery_time - order.created_at
                         delivery_times.append(delta.total_seconds() / 60)
                 
                 if delivery_times:
