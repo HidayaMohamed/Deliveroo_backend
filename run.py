@@ -1,13 +1,20 @@
-# run.py - Just starts things
 from app import create_app
-from extensions import db  # Import your db instance
+from extensions import db
 
 app = create_app()
 
-# Create tables on startup (safe for production - won't recreate existing tables)
-with app.app_context():
-    db.create_all()
+# Seed data ONCE on startup (safe - idempotent)
+try:
+    with app.app_context():
+        db.create_all()
+        from seed import seed_data
+        seed_data()
+    print("✅ Database seeded with production data!")
+except Exception as e:
+    print(f"⚠️ Seeding skipped (already done): {e}")
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
+
+
     
