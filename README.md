@@ -27,19 +27,19 @@ A RESTful API for a parcel delivery management system built with Flask. Supports
 
 ## Tech Stack
 
-| Layer          | Technology                         |
-| -------------- | ---------------------------------- |
-| Framework      | Flask, Flask-RESTful               |
-| Database       | PostgreSQL + SQLAlchemy            |
-| Migrations     | Flask-Migrate (Alembic)            |
+| Layer          | Technology                                   |
+| -------------- | -------------------------------------------- |
+| Framework      | Flask, Flask-RESTful                         |
+| Database       | PostgreSQL + SQLAlchemy                      |
+| Migrations     | Flask-Migrate (Alembic)                      |
 | Authentication | Flask-JWT-Extended (access + refresh tokens) |
-| Passwords      | Flask-Bcrypt                       |
-| Payments       | Safaricom M-Pesa Daraja API        |
-| Email          | Flask-Mail (Gmail SMTP)            |
-| Maps/Distance  | Google Maps Distance Matrix API    |
-| CORS           | Flask-CORS                         |
-| Validation     | Custom validators + phonenumbers   |
-| Serialization  | SQLAlchemy-Serializer              |
+| Passwords      | Flask-Bcrypt                                 |
+| Payments       | Safaricom M-Pesa Daraja API                  |
+| Email          | Flask-Mail (Gmail SMTP)                      |
+| Maps/Distance  | Google Maps Distance Matrix API              |
+| CORS           | Flask-CORS                                   |
+| Validation     | Custom validators + phonenumbers             |
+| Serialization  | SQLAlchemy-Serializer                        |
 
 ---
 
@@ -131,11 +131,11 @@ python seed.py
 
 ### Default Seed Users
 
-| Role     | Email                  | Password    |
-| -------- | ---------------------- | ----------- |
-| Admin    | admin@example.com      | adminpass   |
-| Courier  | courier@example.com    | password    |
-| Customer | customer@example.com   | password    |
+| Role     | Email                | Password  |
+| -------- | -------------------- | --------- |
+| Admin    | admin@example.com    | adminpass |
+| Courier  | courier@example.com  | password  |
+| Customer | customer@example.com | password  |
 
 ---
 
@@ -219,12 +219,12 @@ All endpoints are prefixed with `/api`.
 
 ### Authentication
 
-| Method | Endpoint             | Auth | Description                     |
-| ------ | -------------------- | ---- | ------------------------------- |
-| POST   | `/api/auth/register` | No   | Register a new user             |
-| POST   | `/api/auth/login`    | No   | Login and receive JWT tokens    |
-| GET    | `/api/auth/me`       | JWT  | Get current user profile        |
-| POST   | `/api/auth/refresh`  | Refresh Token | Get new access token  |
+| Method | Endpoint             | Auth          | Description                  |
+| ------ | -------------------- | ------------- | ---------------------------- |
+| POST   | `/api/auth/register` | No            | Register a new user          |
+| POST   | `/api/auth/login`    | No            | Login and receive JWT tokens |
+| GET    | `/api/auth/me`       | JWT           | Get current user profile     |
+| POST   | `/api/auth/refresh`  | Refresh Token | Get new access token         |
 
 #### Register — `POST /api/auth/register`
 
@@ -250,6 +250,7 @@ All endpoints are prefixed with `/api`.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Login successful",
@@ -260,6 +261,7 @@ All endpoints are prefixed with `/api`.
 ```
 
 Use the `access_token` in subsequent requests as:
+
 ```
 Authorization: Bearer <access_token>
 ```
@@ -268,15 +270,15 @@ Authorization: Bearer <access_token>
 
 ### Orders
 
-| Method | Endpoint                              | Auth | Description                        |
-| ------ | ------------------------------------- | ---- | ---------------------------------- |
-| POST   | `/api/orders/`                        | JWT  | Create a new delivery order        |
-| GET    | `/api/orders/`                        | JWT  | List orders (filtered by user role)|
-| GET    | `/api/orders/<id>`                    | JWT  | Get order details                  |
-| PATCH  | `/api/orders/<id>/destination`        | JWT  | Update destination (pending only)  |
-| POST   | `/api/orders/<id>/cancel`             | JWT  | Cancel an order                    |
-| GET    | `/api/orders/<id>/tracking`           | JWT  | Get order tracking history         |
-| POST   | `/api/orders/estimate`                | Optional | Get price estimate without creating |
+| Method | Endpoint                       | Auth     | Description                         |
+| ------ | ------------------------------ | -------- | ----------------------------------- |
+| POST   | `/api/orders/`                 | JWT      | Create a new delivery order         |
+| GET    | `/api/orders/`                 | JWT      | List orders (filtered by user role) |
+| GET    | `/api/orders/<id>`             | JWT      | Get order details                   |
+| PATCH  | `/api/orders/<id>/destination` | JWT      | Update destination (pending only)   |
+| POST   | `/api/orders/<id>/cancel`      | JWT      | Cancel an order                     |
+| GET    | `/api/orders/<id>/tracking`    | JWT      | Get order tracking history          |
+| POST   | `/api/orders/estimate`         | Optional | Get price estimate without creating |
 
 #### Create Order — `POST /api/orders/`
 
@@ -321,13 +323,13 @@ Authorization: Bearer <access_token>
 
 All courier endpoints require JWT with `courier` role.
 
-| Method | Endpoint                                     | Description                          |
-| ------ | -------------------------------------------- | ------------------------------------ |
-| GET    | `/api/courier/orders`                        | List assigned orders                 |
-| GET    | `/api/courier/orders/<id>`                   | Get assigned order details           |
-| PATCH  | `/api/courier/orders/<id>/status`            | Update order status                  |
-| PATCH  | `/api/courier/orders/<id>/location`          | Update current GPS location          |
-| GET    | `/api/courier/stats`                         | Get personal delivery statistics     |
+| Method | Endpoint                            | Description                      |
+| ------ | ----------------------------------- | -------------------------------- |
+| GET    | `/api/courier/orders`               | List assigned orders             |
+| GET    | `/api/courier/orders/<id>`          | Get assigned order details       |
+| PATCH  | `/api/courier/orders/<id>/status`   | Update order status              |
+| PATCH  | `/api/courier/orders/<id>/location` | Update current GPS location      |
+| GET    | `/api/courier/stats`                | Get personal delivery statistics |
 
 #### Update Status — `PATCH /api/courier/orders/<id>/status`
 
@@ -356,13 +358,13 @@ All courier endpoints require JWT with `courier` role.
 
 All admin endpoints require JWT with `admin` role.
 
-| Method | Endpoint                                     | Description                          |
-| ------ | -------------------------------------------- | ------------------------------------ |
-| GET    | `/api/admin/users`                           | List all users                       |
-| GET    | `/api/admin/orders`                          | List all orders (with filters)       |
-| PATCH  | `/api/admin/orders/<id>/assign`              | Assign courier to order              |
-| PATCH  | `/api/admin/orders/<id>/status`              | Override order status                |
-| GET    | `/api/admin/stats`                           | Dashboard statistics                 |
+| Method | Endpoint                        | Description                    |
+| ------ | ------------------------------- | ------------------------------ |
+| GET    | `/api/admin/users`              | List all users                 |
+| GET    | `/api/admin/orders`             | List all orders (with filters) |
+| PATCH  | `/api/admin/orders/<id>/assign` | Assign courier to order        |
+| PATCH  | `/api/admin/orders/<id>/status` | Override order status          |
+| GET    | `/api/admin/stats`              | Dashboard statistics           |
 
 #### Assign Courier — `PATCH /api/admin/orders/<id>/assign`
 
@@ -377,12 +379,13 @@ All admin endpoints require JWT with `admin` role.
 Query params: `period` = `today` | `week` | `month` | `all`
 
 **Response:**
+
 ```json
 {
   "period": "today",
   "summary": {
     "total_orders": 45,
-    "total_revenue": 125000.00,
+    "total_revenue": 125000.0,
     "active_couriers": 8,
     "couriers_on_delivery": 5,
     "average_delivery_time_minutes": 42.5
@@ -411,14 +414,14 @@ GET /api/admin/orders?status=PENDING&date_from=2026-01-01&limit=10&page=1
 
 ### Payments (M-Pesa)
 
-| Method | Endpoint                                      | Description                        |
-| ------ | --------------------------------------------- | ---------------------------------- |
-| POST   | `/api/payments/initiate`                      | Initiate M-Pesa STK Push          |
-| POST   | `/api/payments/callback`                      | M-Pesa callback (Safaricom calls this) |
-| GET    | `/api/payments/status/<order_id>`             | Get payment status for an order    |
-| GET    | `/api/payments/query/<checkout_request_id>`   | Query M-Pesa transaction status    |
-| POST   | `/api/payments/orders/<order_id>/pay`         | Pay for order (alias for initiate) |
-| POST   | `/api/payments/test`                          | Test STK Push (dev only)           |
+| Method | Endpoint                                    | Description                            |
+| ------ | ------------------------------------------- | -------------------------------------- |
+| POST   | `/api/payments/initiate`                    | Initiate M-Pesa STK Push               |
+| POST   | `/api/payments/callback`                    | M-Pesa callback (Safaricom calls this) |
+| GET    | `/api/payments/status/<order_id>`           | Get payment status for an order        |
+| GET    | `/api/payments/query/<checkout_request_id>` | Query M-Pesa transaction status        |
+| POST   | `/api/payments/orders/<order_id>/pay`       | Pay for order (alias for initiate)     |
+| POST   | `/api/payments/test`                        | Test STK Push (dev only)               |
 
 #### Initiate Payment — `POST /api/payments/initiate`
 
@@ -430,6 +433,7 @@ GET /api/admin/orders?status=PENDING&date_from=2026-01-01&limit=10&page=1
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -437,7 +441,7 @@ GET /api/admin/orders?status=PENDING&date_from=2026-01-01&limit=10&page=1
   "payment_id": 1,
   "transaction_reference": "PAY250210143012",
   "checkout_request_id": "ws_CO_...",
-  "amount": 850.00,
+  "amount": 850.0,
   "currency": "KES"
 }
 ```
@@ -453,21 +457,27 @@ GET /api/admin/orders?status=PENDING&date_from=2026-01-01&limit=10&page=1
 ## Data Models
 
 ### User
+
 Supports three roles: `customer`, `courier`, `admin`. Couriers require `vehicle_type` and `plate_number` (enforced by a database check constraint). Passwords are hashed with bcrypt. Phone numbers are validated using the `phonenumbers` library and must include a country code.
 
 ### DeliveryOrder
+
 Central model with pickup/destination coordinates, parcel details (weight, dimensions, fragile flag), full pricing breakdown, status tracking, and relationships to payment, tracking updates, and notifications.
 
 ### CourierProfile
+
 Extended profile for couriers with vehicle info, verification status, total delivery count, and rating.
 
 ### Payment
+
 Tracks M-Pesa and card payments with transaction references, M-Pesa receipt numbers, checkout/merchant request IDs, and status lifecycle (PENDING -> PROCESSING -> PAID / FAILED / REFUNDED / CANCELLED).
 
 ### OrderTracking
+
 GPS location history for each order. Records latitude, longitude, status at time of update, courier speed, device battery level, GPS accuracy, and optional photo proof URL.
 
 ### Notification
+
 In-app notifications for users about order updates, courier assignments, and status changes. Tracks read/unread state.
 
 ---
@@ -475,7 +485,9 @@ In-app notifications for users about order updates, courier assignments, and sta
 ## Services
 
 ### PricingService
+
 Calculates delivery prices based on:
+
 - **Base fare**: KES 150
 - **Distance rate**: KES 50/km (distance from Google Maps Distance Matrix API)
 - **Weight tiers**: Small (<5kg: KES 150), Medium (5-20kg: KES 300), Large (20-50kg: KES 500), XLarge (>50kg: KES 1000)
@@ -483,10 +495,13 @@ Calculates delivery prices based on:
 - **Estimated delivery time**: Based on 40 km/h normal, 60 km/h express + handling buffer
 
 ### MapsService
+
 Wraps the Google Maps Distance Matrix API to calculate driving distance (km) and duration (minutes) between pickup and destination coordinates.
 
 ### MpesaService (Payment Service)
+
 Full Safaricom M-Pesa Daraja API integration:
+
 - OAuth access token generation
 - STK Push (Lipa Na M-Pesa Online) initiation
 - Callback parsing for payment confirmation
@@ -495,7 +510,9 @@ Full Safaricom M-Pesa Daraja API integration:
 - Supports sandbox and production environments
 
 ### EmailService
+
 Sends transactional emails via Gmail SMTP:
+
 - **Status updates** — when order status changes
 - **Courier assigned** — when admin assigns a courier to an order
 - **Delivery complete** — when order is marked as delivered
@@ -506,12 +523,12 @@ Sends transactional emails via Gmail SMTP:
 
 Access is enforced via JWT claims and decorator guards defined in `app/utils/role_guards.py`:
 
-| Decorator              | Allowed Roles        | Used In          |
-| ---------------------- | -------------------- | ---------------- |
-| `@admin_required`      | admin                | Admin routes     |
-| `@courier_required`    | courier              | Courier routes   |
-| `@customer_required`   | customer             | Customer routes  |
-| `@admin_courier_required` | admin, courier    | Shared routes    |
+| Decorator                 | Allowed Roles  | Used In         |
+| ------------------------- | -------------- | --------------- |
+| `@admin_required`         | admin          | Admin routes    |
+| `@courier_required`       | courier        | Courier routes  |
+| `@customer_required`      | customer       | Customer routes |
+| `@admin_courier_required` | admin, courier | Shared routes   |
 
 The user's role is automatically embedded in the JWT token via the `additional_claims_loader` in `extensions.py`. The decorators verify the claim on each request.
 
@@ -526,14 +543,14 @@ PENDING ──> ASSIGNED ──> PICKED_UP ──> IN_TRANSIT ──> DELIVERED
 CANCELLED   CANCELLED   CANCELLED
 ```
 
-| Status      | Description                              | Who Can Set It       |
-| ----------- | ---------------------------------------- | -------------------- |
-| PENDING     | Order created, awaiting courier          | System (on creation) |
-| ASSIGNED    | Admin assigned a courier                 | Admin                |
-| PICKED_UP   | Courier picked up the parcel             | Courier              |
-| IN_TRANSIT  | Courier is en route to destination       | Courier              |
-| DELIVERED   | Parcel delivered successfully            | Courier              |
-| CANCELLED   | Order cancelled                          | Customer, Admin      |
+| Status     | Description                        | Who Can Set It       |
+| ---------- | ---------------------------------- | -------------------- |
+| PENDING    | Order created, awaiting courier    | System (on creation) |
+| ASSIGNED   | Admin assigned a courier           | Admin                |
+| PICKED_UP  | Courier picked up the parcel       | Courier              |
+| IN_TRANSIT | Courier is en route to destination | Courier              |
+| DELIVERED  | Parcel delivered successfully      | Courier              |
+| CANCELLED  | Order cancelled                    | Customer, Admin      |
 
 ---
 
