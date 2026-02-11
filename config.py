@@ -1,12 +1,21 @@
 import os
 from datetime import timedelta
+from urllib.parse import urlparse
 
 class Config:
-    # Database
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL',
-        'postgresql://postgres:password@localhost:5432/deliveroo'
-    )
+    # Database - FIXED for Render PostgreSQL
+    db_url = os.getenv('DATABASE_URL')
+    if db_url:
+        if db_url.startswith('postgres://'):
+            db_url = db_url.replace('postgres://', 'postgresql://', 1)
+        # Add SSL for Render PostgreSQL
+        parsed = urlparse(db_url)
+        if not parsed.query:
+            db_url += '?sslmode=require'
+        else:
+            db_url += '&sslmode=require'
+    
+    SQLALCHEMY_DATABASE_URI = db_url or 'postgresql://postgres:password@localhost:5432/deliveroo'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # JWT
@@ -17,7 +26,7 @@ class Config:
     # Google Maps
     GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
     
-    # Email (for Andrew later)
+    # Email
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
