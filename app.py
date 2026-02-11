@@ -3,6 +3,7 @@ Deliveroo - Parcel Delivery Management System
 Main application entry point
 """
 import os
+import logging
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -65,31 +66,21 @@ def seed_db():
     seed_data()
     print("✅ Database seeded successfully!")
 
-# Health check endpoint
-@app.route('/health')
-def health_check():
-    """Simple health check endpoint"""
-    return {
-        'status': 'healthy',
-        'message': 'Deliveroo API is running',
-        'database': 'connected' if db.engine.url else 'not configured'
-    }, 200
+@app.cli.command()
+def validate_routes():
+    """
+    Validate all registered routes
+    Usage: flask validate-routes
+    """
+    from app.routes.main_routes import main_bp
+    from app.routes.admin_routes import AdminUsersResource, AdminOrdersResource
+    
+    # Import all routes to ensure they're registered
+    from app.routes import auth_routes, courier_routes, payment_routes, users_routes
+    
+    from app.utils.route_validator import validate_all_routes
+    validate_all_routes(app)
 
-# Root endpoint
-@app.route('/')
-def index():
-    """API root endpoint with available routes"""
-    return {
-        'message': 'Welcome to Deliveroo API',
-        'version': '1.0.0',
-        'endpoints': {
-            'health': '/health',
-            'auth': '/auth/*',
-            'orders': '/orders/*',
-            'admin': '/admin/*',
-            'courier': '/courier/*'
-        }
-    }, 200
 
 # Error handlers
 @app.errorhandler(404)
@@ -159,6 +150,7 @@ if __name__ == '__main__':
     • flask db init    - Initialize migrations
     • flask db migrate - Create migration
     • flask db upgrade - Apply migrations
+    • flask validate-routes - Validate all routes
     
     Press CTRL+C to quit
     """)
@@ -168,4 +160,3 @@ if __name__ == '__main__':
         port=port,
         debug=debug
     )
-

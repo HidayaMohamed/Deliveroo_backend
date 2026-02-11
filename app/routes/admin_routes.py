@@ -222,9 +222,11 @@ class AdminAssignCourierResource(Resource):
             # Send email notification to customer
             customer = User.query.get(order.user_id)
             if customer and customer.email:
-                EmailService.send_courier_assigned(
+                EmailService.send_status_email(
                     user_email=customer.email,
+                    user_name=customer.full_name,
                     order_id=order.id,
+                    status='Courier Assigned',
                     courier_name=courier.full_name,
                     courier_phone=courier.phone or 'N/A'
                 )
@@ -403,8 +405,9 @@ class AdminUpdateOrderStatusResource(Resource):
             # Send email notification
             customer = User.query.get(order.user_id)
             if customer and customer.email:
-                EmailService.send_status_update(
+                EmailService.send_status_email(
                     user_email=customer.email,
+                    user_name=customer.full_name,
                     order_id=order.id,
                     status=new_status
                 )
