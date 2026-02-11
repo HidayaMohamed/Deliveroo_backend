@@ -71,21 +71,17 @@ def seed_db():
     seed_data()
     print("✅ Database seeded successfully!")
 
-@app.cli.command()
-def validate_routes():
-    """
-    Validate all registered routes
-    Usage: flask validate-routes
-    """
-    from app.routes.main_routes import main_bp
-    from app.routes.admin_routes import AdminUsersResource, AdminOrdersResource
-    
-    # Import all routes to ensure they're registered
-    from app.routes import auth_routes, courier_routes, payment_routes, users_routes
-    
-    from app.utils.route_validator import validate_all_routes
-    validate_all_routes(app)
+# Health check endpoint
+@app.route('/health')
+def health_check():
+    """Simple health check endpoint"""
+    return {
+        'status': 'healthy',
+        'message': 'Deliveroo API is running',
+        'database': 'connected' if db.engine.url else 'not configured'
+    }, 200
 
+# Root endpoint
 
 # Error handlers
 @app.errorhandler(404)
