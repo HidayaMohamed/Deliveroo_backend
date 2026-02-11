@@ -1,3 +1,5 @@
+import os  
+from flask import Flask
 from flask import Flask
 from flask_migrate import Migrate
 from flask_mail import Mail
@@ -27,7 +29,7 @@ def create_app(config_class=Config):
     
     # Configure CORS with proper settings for preflight requests
     # Load CORS origins from environment variable for production flexibility
-    cors_origins_str = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
+    cors_origins_str = os.getenv('CORS_ORIGINS', '*')
     cors_origins = [origin.strip() for origin in cors_origins_str.split(',')]
     
     CORS(app, 
