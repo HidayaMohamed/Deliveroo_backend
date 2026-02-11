@@ -23,4 +23,4 @@ class CourierProfile(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationship
-    user = db.relationship('User', backref='courier_profile')
+    user = db.relationship('User', back_populates='courier_profile')

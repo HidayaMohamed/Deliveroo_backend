@@ -31,6 +31,13 @@ def create_app(config_class=Config):
                  "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
                  "supports_credentials": True,
                  "preflight_max_age": 86400  # 24 hours
+             },
+             r"/auth/*": {
+                 "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+                 "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+                 "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
+                 "supports_credentials": True,
+                 "preflight_max_age": 86400
              }
          },
          supports_credentials=True,
@@ -83,6 +90,9 @@ def create_app(config_class=Config):
 
     from app.routes.payment_routes import payments_bp
     app.register_blueprint(payments_bp)
+    
+    from app.routes.order_routes import orders_bp
+    app.register_blueprint(orders_bp)
     
     return app
 

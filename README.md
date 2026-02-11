@@ -1,60 +1,72 @@
 # Deliveroo Backend
 
-A simple Flask backend for a parcel delivery system.
+## Quick Start
 
-## Quick setup
-
-1. Install dependencies:
-
-   pipenv install
-
-2. Configure environment variables in `.env` (see `.env` file in repo). At minimum set:
-   - `DATABASE_URL` (example: `postgresql://postgres:password@localhost:5432/deliveroo`)
-   - `JWT_SECRET_KEY`
-
-## PostgreSQL setup (Ubuntu/Debian)
-
+### 1. Install Dependencies
 ```bash
-sudo apt update && sudo apt install -y postgresql postgresql-contrib
-sudo systemctl start postgresql
-# Create database (runs as postgres user)
+pip install pipenv
+pipenv install
+```
+
+### 2. Configure PostgreSQL
+
+Run the setup script:
+```bash
+chmod +x setup_postgres.sh
+./setup_postgres.sh
+```
+
+Or manually:
+```bash
+# Set password
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+
+# Create database
 sudo -u postgres createdb deliveroo
-# (Optional) set postgres user password or create a dedicated user
-sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'password';"
 ```
 
-Update your `.env` `DATABASE_URL` accordingly (including user and password). Example:
-
-```
-DATABASE_URL=postgresql://postgres:password@localhost:5432/deliveroo
-```
-
-## Create tables and seed data
-
-Use the included Flask CLI commands (requires `FLASK_APP` set to `app.py` in your env):
-
+### 3. Configure Environment
 ```bash
-flask create-db
-flask seed-db
+cp .env.example .env
+# Edit .env with your settings (DATABASE_URL already configured)
 ```
 
-Or run the seeder directly:
-
+### 4. Run Migrations
 ```bash
-python seed.py
+flask db upgrade
 ```
 
-The `seed` script will create an admin user (from `ADMIN_EMAIL`/`ADMIN_PASSWORD` env vars or defaults) and sample courier/customer users.
-
-## Quick alternative (SQLite, dev only)
-
-If you don't want to install Postgres, use a local SQLite DB for development/tests:
-
+### 5. Start Server
 ```bash
-export DATABASE_URL="sqlite:///dev.db"
-python seed.py
+python run.py
 ```
 
----
+## Environment Variables
 
-If you'd like, I can also add a GitHub Actions workflow to run `pipenv run pytest` on each PR and ensure the test suite stays green.
+| Variable | Description | Required |
+|----------|-------------|----------|
+| DATABASE_URL | PostgreSQL connection string | Yes |
+| JWT_SECRET_KEY | Secret key for JWT tokens | Yes |
+| GOOGLE_MAPS_API_KEY | Google Maps API key | No |
+| MAIL_USERNAME | SMTP email username | No |
+| MAIL_PASSWORD | SMTP email password | No |
+
+## Default Database URL
+```
+postgresql://postgres:postgres@localhost:5432/deliveroo
+```
+
+## Common Issues
+
+### "password authentication failed for user postgres"
+Run the setup script or reset your PostgreSQL password:
+```bash
+sudo -u postgres psql
+ALTER USER postgres WITH PASSWORD 'postgres';
+```
+
+### "database does not exist"
+Create the database:
+```bash
+sudo -u postgres createdb deliveroo
+```
