@@ -1,10 +1,15 @@
+import os  
+from flask import Flask
 from flask import Flask
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_cors import CORS
 from config import Config
 from extensions import db, jwt
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 
 migrate = Migrate()
@@ -23,10 +28,14 @@ def create_app(config_class=Config):
     mail.init_app(app)
     
     # Configure CORS with proper settings for preflight requests
+    # Load CORS origins from environment variable for production flexibility
+    cors_origins_str = os.getenv('CORS_ORIGINS', '*')
+    cors_origins = [origin.strip() for origin in cors_origins_str.split(',')]
+    
     CORS(app, 
          resources={
              r"/api/*": {
-                 "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+                 "origins": cors_origins,
                  "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
                  "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
                  "supports_credentials": True,
@@ -80,6 +89,10 @@ def create_app(config_class=Config):
     api.add_resource(CourierUpdateStatusResource, "/api/courier/orders/<int:order_id>/status")
     api.add_resource(CourierUpdateLocationResource, "/api/courier/orders/<int:order_id>/location")
     api.add_resource(CourierStatsResource, "/api/courier/stats")
+
+    # Register Blueprint routes
+    from app.routes.order_routes import orders_bp
+    app.register_blueprint(orders_bp)
 
     from app.routes.payment_routes import payments_bp
     app.register_blueprint(payments_bp)
