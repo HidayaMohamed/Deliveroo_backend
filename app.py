@@ -3,6 +3,7 @@ Deliveroo - Parcel Delivery Management System
 Main application entry point
 """
 import os
+import logging
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -81,20 +82,6 @@ def health_check():
     }, 200
 
 # Root endpoint
-@app.route('/')
-def index():
-    """API root endpoint with available routes"""
-    return {
-        'message': 'Welcome to Deliveroo API',
-        'version': '1.0.0',
-        'endpoints': {
-            'health': '/health',
-            'auth': '/auth/*',
-            'orders': '/orders/*',
-            'admin': '/admin/*',
-            'courier': '/courier/*'
-        }
-    }, 200
 
 # Error handlers
 @app.errorhandler(404)
@@ -164,6 +151,7 @@ if __name__ == '__main__':
     • flask db init    - Initialize migrations
     • flask db migrate - Create migration
     • flask db upgrade - Apply migrations
+    • flask validate-routes - Validate all routes
     
     Press CTRL+C to quit
     """)
@@ -173,12 +161,3 @@ if __name__ == '__main__':
         port=port,
         debug=debug
     )
-
-
-# ============================================
-# PRODUCTION ENTRY POINT (for Gunicorn)
-# ============================================
-# When running with gunicorn, use:
-# gunicorn --chdir /path/to/project app:app
-# ============================================
-

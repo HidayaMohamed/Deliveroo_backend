@@ -96,6 +96,14 @@ def create_app(config_class=Config):
 
     from app.routes.payment_routes import payments_bp
     app.register_blueprint(payments_bp)
-
+    
+    # Register users routes blueprint
+    from app.routes.users_routes import users_bp
+    app.register_blueprint(users_bp)
+    
+    # Register main routes blueprint
+    from app.routes.main_routes import main_bp
+    app.register_blueprint(main_bp)
+    
     return app
 
