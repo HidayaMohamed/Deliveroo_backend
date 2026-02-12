@@ -34,8 +34,12 @@ def seed_data():
         
         users = {}
         for user_data in users_data:
-            # Idempotent - skip if exists
-            if not User.query.filter_by(email=user_data["email"]).first():
+            # Idempotent - skip create if a user already exists by email OR phone
+            existing_user = User.query.filter(
+                (User.email == user_data["email"]) | (User.phone == user_data["phone"])
+            ).first()
+
+            if not existing_user:
                 user = User(
                     full_name=user_data["full_name"],
                     email=user_data["email"],
@@ -49,7 +53,10 @@ def seed_data():
                 db.session.add(user)
                 db.session.commit()
                 print(f"✅ {user.role.upper()}: {user.email}")
-            users[user_data["email"]] = User.query.filter_by(email=user_data["email"]).first()
+            else:
+                print(f"ℹ️ Skipping existing user: {existing_user.email} ({existing_user.phone})")
+
+            users[user_data["email"]] = User.query.filter_by(email=user_data["email"]).first() or existing_user
         
         # ===== 2. COURIER PROFILES =====
         courier_users = [users["mary.rider@deliveroo.ke"], users["joseph.rider@deliveroo.ke"]]
