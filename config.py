@@ -18,11 +18,10 @@ class Config:
     SQLALCHEMY_DATABASE_URI = db_url or 'postgresql://postgres:password@localhost:5432/deliveroo'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_pre_ping": True,  # Test connections before use
-        "pool_recycle": 300,    # Refresh connections every 5 min
-        "pool_timeout": 20,     # Wait 20s for connection
-        "pool_size": 5,         # Max 5 connections
-        "max_overflow": 10      # Allow 10 extra connections
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_size': 5,
+        'max_overflow': 10,
     }
     
     # JWT
