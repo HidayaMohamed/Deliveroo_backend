@@ -11,9 +11,9 @@ class Config:
         # Add SSL for Render PostgreSQL
         parsed = urlparse(db_url)
         if not parsed.query:
-            db_url += '?sslmode=require'
+            db_url += '?sslmode=require&pool_pre_ping=true&pool_recycle=300'
         else:
-            db_url += '&sslmode=require'
+            db_url += '&sslmode=require&pool_pre_ping=true&pool_recycle=300'
     
     SQLALCHEMY_DATABASE_URI = db_url or 'postgresql://postgres:password@localhost:5432/deliveroo'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

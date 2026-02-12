@@ -28,9 +28,9 @@ class RegisterResource(Resource):
             
             role = data.get("role", "customer")
             
-            # Validate role
-            if role not in ("customer", "courier", "admin"):
-                return {"message": "Invalid role"}, 400
+            # Validate role - only allow customer and courier (admin must be created via seed)
+            if role not in ("customer", "courier"):
+                return {"message": "Invalid role. Admin accounts must be created by system administrator."}, 400
 
             # Normalize and validate courier-specific fields
             vehicle = (data.get("vehicle_type") or "").strip()
