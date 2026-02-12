@@ -28,14 +28,11 @@ def create_app(config_class=Config):
     mail.init_app(app)
     
     # Configure CORS with proper settings for preflight requests
-    # Load CORS origins from environment variable for production flexibility
-    cors_origins_str = os.getenv('CORS_ORIGINS', '*')
-    cors_origins = [origin.strip() for origin in cors_origins_str.split(',')]
-    
-    CORS(app, 
+    # Allow specific origin for frontend with credentials
+    CORS(app,
          resources={
              r"/api/*": {
-                 "origins": cors_origins,
+                 "origins": ["https://deliveroo-frontend-two.vercel.app"],
                  "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
                  "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
                  "supports_credentials": True,
