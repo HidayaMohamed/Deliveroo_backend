@@ -51,8 +51,16 @@ class RegisterResource(Resource):
             email = User.query.filter_by(email=data['email']).first()
             if email:
                 return {"message": "Email already taken"}, 422
-            phone= User.query.filter_by(phone=data['phone']).first()
-            if phone:
+            # Format phone number before validation
+            raw_phone = data.get("phone", "")
+            if raw_phone.startswith("0"):
+                data["phone"] = "+254" + raw_phone[1:]
+            elif raw_phone.startswith("254"):
+                data["phone"] = "+" + raw_phone
+
+            # Check for existing phone AFTER formatting
+            existing_phone = User.query.filter_by(phone=data['phone']).first()
+            if existing_phone:
                 return {"message": "Phone number already taken"}, 422
             password = data.pop("password")
             user = User(**data)
