@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 class Config:
     # Database - FIXED for Render PostgreSQL
     db_url = os.getenv('DATABASE_URL')
+    _is_remote = False
     if db_url:
         if db_url.startswith('postgres://'):
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
@@ -22,6 +23,7 @@ class Config:
         'pool_recycle': 300,
         'pool_size': 5,
         'max_overflow': 10,
+        **({'connect_args': {'sslmode': 'require'}} if _is_remote else {}),
     }
     
     # JWT
