@@ -10,6 +10,7 @@ from app.models.payment import Payment
 from app.models import User, Notification
 from app.services.pricing_service import PricingService
 from app.services.maps_service import MapsService
+from app.services.email_service import EmailService
 from app.validators.order_validators import OrderValidator
 
 orders_bp = Blueprint('orders', __name__, url_prefix='/api/orders')
@@ -106,6 +107,20 @@ def create_order():
                    f'Estimated delivery: {estimated_delivery_time.strftime("%b %d, %H:%M")}'
         )
         db.session.add(notification)
+        
+        # Send email notification to customer
+        user = User.query.get(current_user_id)
+        if user and user.email:
+            try:
+                EmailService.send_status_email(
+                    user_email=user.email,
+                    user_name=user.full_name,
+                    order_id=order.tracking_number,
+                    status='Pending'
+                )
+            except Exception as email_error:
+                # Log email error but don't fail order creation
+                print(f"Failed to send order confirmation email: {email_error}")
         
         db.session.commit()
         
@@ -226,9 +241,7 @@ def update_destination(order_id):
         return jsonify({'error': 'Destination can only be updated for pending orders'}), 400
     
     # Validate destination data
-    is_valid, validated_data, errors = OrderValidator.validate_update_destination(
-        data, order.status.value
-    )
+    is_valid, validated_data, errors = OrderValidator.validate_update_destination(data)
     
     if not is_valid:
         return jsonify({'errors': errors}), 400

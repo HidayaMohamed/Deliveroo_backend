@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from sqlalchemy import MetaData
 
 # Naming convention for constraints 
@@ -15,6 +16,11 @@ naming_convention = {
 db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
 bcrypt = Bcrypt()
 jwt = JWTManager()
+mail = Mail()
+
+def init_bcrypt(app):
+    """Initialize bcrypt with the Flask app"""
+    bcrypt.init_app(app)
 
 @jwt.additional_claims_loader
 def add_claims_to_jwt(identity):

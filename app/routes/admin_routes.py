@@ -23,33 +23,32 @@ class AdminUsersResource(Resource):
         Get all users in the system with optional filters
         GET /admin/users?role=courier&is_active=true&limit=20&page=1
         """
-        parser = reqparse.RequestParser()
-        parser.add_argument('role', type=str, required=False, choices=['courier', 'customer', 'admin'])
-        parser.add_argument('is_active', type=str, required=False)
-        parser.add_argument('limit', type=int, default=20, required=False)
-        parser.add_argument('page', type=int, default=1, required=False)
+        from flask import request
         
-        args = parser.parse_args()
+        role = request.args.get('role')
+        is_active = request.args.get('is_active')
+        limit = request.args.get('limit', 20, type=int)
+        page = request.args.get('page', 1, type=int)
         
         try:
             # Base query
             query = User.query
             
             # Apply filters
-            if args['role']:
-                query = query.filter_by(role=args['role'])
+            if role:
+                query = query.filter_by(role=role)
             
-            if args['is_active'] is not None:
-                is_active = args['is_active'].lower() == 'true'
-                query = query.filter_by(is_active=is_active)
+            if is_active is not None:
+                is_active_bool = is_active.lower() == 'true'
+                query = query.filter_by(is_active=is_active_bool)
             
             # Get total count
             total = query.count()
             
             # Apply pagination
             users = query.order_by(User.created_at.desc())\
-                         .limit(args['limit'])\
-                         .offset((args['page'] - 1) * args['limit'])\
+                         .limit(limit)\
+                         .offset((page - 1) * limit)\
                          .all()
             
             # Serialize users (excluding password_hash is handled by serialize_rules)
@@ -59,9 +58,9 @@ class AdminUsersResource(Resource):
                 'users': users_data,
                 'pagination': {
                     'total': total,
-                    'page': args['page'],
-                    'limit': args['limit'],
-                    'pages': (total + args['limit'] - 1) // args['limit']
+                    'page': page,
+                    'limit': limit,
+                    'pages': (total + limit - 1) // limit
                 }
             }, 200
         
@@ -78,39 +77,38 @@ class AdminOrdersResource(Resource):
         Get all orders in the system with optional filters
         GET /admin/orders?status=PENDING&limit=20&page=1
         """
-        parser = reqparse.RequestParser()
-        parser.add_argument('status', type=str, required=False)
-        parser.add_argument('courier_id', type=int, required=False)
-        parser.add_argument('date_from', type=str, required=False)
-        parser.add_argument('date_to', type=str, required=False)
-        parser.add_argument('limit', type=int, default=20, required=False)
-        parser.add_argument('page', type=int, default=1, required=False)
+        from flask import request
         
-        args = parser.parse_args()
+        status = request.args.get('status')
+        courier_id = request.args.get('courier_id', type=int)
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        limit = request.args.get('limit', 20, type=int)
+        page = request.args.get('page', 1, type=int)
         
         try:
             # Base query
             query = DeliveryOrder.query
             
             # Apply filters
-            if args['status']:
+            if status:
                 try:
-                    status_enum = OrderStatus(args['status'])
+                    status_enum = OrderStatus(status)
                     query = query.filter_by(status=status_enum)
                 except ValueError:
                     return {
                         'error': f'Invalid status. Valid options: {[s.value for s in OrderStatus]}'
                     }, 400
             
-            if args['courier_id']:
-                query = query.filter_by(courier_id=args['courier_id'])
+            if courier_id:
+                query = query.filter_by(courier_id=courier_id)
             
-            if args['date_from']:
-                date_from_obj = datetime.strptime(args['date_from'], '%Y-%m-%d')
+            if date_from:
+                date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
                 query = query.filter(DeliveryOrder.created_at >= date_from_obj)
             
-            if args['date_to']:
-                date_to_obj = datetime.strptime(args['date_to'], '%Y-%m-%d') + timedelta(days=1)
+            if date_to:
+                date_to_obj = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1)
                 query = query.filter(DeliveryOrder.created_at < date_to_obj)
             
             # Get total count
@@ -118,8 +116,8 @@ class AdminOrdersResource(Resource):
             
             # Apply pagination
             orders = query.order_by(DeliveryOrder.created_at.desc())\
-                         .limit(args['limit'])\
-                         .offset((args['page'] - 1) * args['limit'])\
+                         .limit(limit)\
+                         .offset((page - 1) * limit)\
                          .all()
             
             # Serialize orders
@@ -129,9 +127,9 @@ class AdminOrdersResource(Resource):
                 'orders': orders_data,
                 'pagination': {
                     'total': total,
-                    'page': args['page'],
-                    'limit': args['limit'],
-                    'pages': (total + args['limit'] - 1) // args['limit']
+                    'page': page,
+                    'limit': limit,
+                    'pages': (total + limit - 1) // limit
                 }
             }, 200
         
@@ -222,9 +220,11 @@ class AdminAssignCourierResource(Resource):
             # Send email notification to customer
             customer = User.query.get(order.user_id)
             if customer and customer.email:
-                EmailService.send_courier_assigned(
+                EmailService.send_status_email(
                     user_email=customer.email,
+                    user_name=customer.full_name,
                     order_id=order.id,
+                    status='Courier Assigned',
                     courier_name=courier.full_name,
                     courier_phone=courier.phone or 'N/A'
                 )
@@ -254,13 +254,10 @@ class AdminStatsResource(Resource):
         Get dashboard statistics for admin
         GET /admin/stats?period=today
         """
-        parser = reqparse.RequestParser()
-        parser.add_argument('period', type=str, default='all', required=False)
-        args = parser.parse_args()
+        from flask import request
+        period = request.args.get('period', 'all')
         
         try:
-            period = args['period']
-            
             # Determine date filter
             now = datetime.utcnow()
             if period == 'today':
@@ -403,8 +400,9 @@ class AdminUpdateOrderStatusResource(Resource):
             # Send email notification
             customer = User.query.get(order.user_id)
             if customer and customer.email:
-                EmailService.send_status_update(
+                EmailService.send_status_email(
                     user_email=customer.email,
+                    user_name=customer.full_name,
                     order_id=order.id,
                     status=new_status
                 )

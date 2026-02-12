@@ -1,62 +1,31 @@
 #!/bin/bash
 
-# Deliveroo PostgreSQL Setup Script
-# Run this script to configure PostgreSQL for Deliveroo
+# Complete PostgreSQL Setup for Deliveroo
+# Run these commands manually in terminal:
 
-echo "🐙 Deliveroo PostgreSQL Setup"
-echo "=============================="
+# 1. Create the deliveroo_user if it doesn't exist
+echo "Creating deliveroo_user role..."
+sudo -u postgres createuser -s deliveroo_user
 
-# Set PostgreSQL password
-echo ""
-echo "Setting PostgreSQL password to 'postgres'..."
-sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null
+# 2. Set the password
+echo "Setting password for deliveroo_user..."
+sudo -u postgres psql -c "ALTER USER deliveroo_user WITH PASSWORD '123885490';"
 
-if [ $? -eq 0 ]; then
-    echo "✅ Password set successfully!"
-else
-    echo "⚠️  Could not set password automatically. Trying alternative method..."
-    
-    # Alternative: Create a .pgpass file
-    echo "localhost:5432:*:postgres:postgres" > ~/.pgpass
-    chmod 600 ~/.pgpass
-    
-    # Try using psql with .pgpass
-    psql -h localhost -U postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ Password set via .pgpass!"
-    else
-        echo "❌ Could not set password. Please run manually:"
-        echo "   sudo -u postgres psql"
-        echo "   Then run: ALTER USER postgres WITH PASSWORD 'postgres';"
-    fi
-fi
+# 3. Create the database
+echo "Creating deliveroo_db database..."
+sudo -u postgres createdb deliveroo_db
 
-# Create database
-echo ""
-echo "Creating 'deliveroo' database..."
-sudo -u postgres createdb deliveroo 2>/dev/null || echo "⚠️  Database may already exist or could not be created"
+# 4. Grant privileges
+echo "Granting privileges..."
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE deliveroo_db TO deliveroo_user;"
 
-# Create .env file if it doesn't exist
-echo ""
-if [ ! -f .env ]; then
-    echo "Creating .env file..."
-    cat > .env << 'EOF'
-# Deliveroo Environment Configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/deliveroo
-JWT_SECRET_KEY=deliveroo-secret-key-change-in-production
-EOF
-    echo "✅ .env file created!"
-else
-    echo "⚠️  .env file already exists. Make sure it has:"
-    echo "   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/deliveroo"
-fi
+# 5. Configure pg_hba.conf for md5 authentication
+echo "Configuring pg_hba.conf..."
+sudo sed -i 's/local   all             all                                     peer/local   all             all                                     md5/' /etc/postgresql/12/main/pg_hba.conf
+
+# 6. Restart PostgreSQL
+echo "Restarting PostgreSQL..."
+sudo systemctl restart postgresql
 
 echo ""
-echo "=============================="
-echo "✅ Setup complete!"
-echo ""
-echo "Next steps:"
-echo "1. Run: flask db upgrade"
-echo "2. Run: python run.py"
-echo ""
+echo "Setup complete! Now run: flask run"
