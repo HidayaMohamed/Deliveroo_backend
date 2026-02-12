@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 class Config:
     # Database - FIXED for Render PostgreSQL
@@ -9,13 +9,25 @@ class Config:
     if db_url:
         if db_url.startswith('postgres://'):
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
-        # Add SSL for Render PostgreSQL
+
+        # Guard against SQLAlchemy engine options accidentally being added
+        # to DATABASE_URL query params (causes psycopg2 invalid dsn errors).
         parsed = urlparse(db_url)
-        if not parsed.query:
-            db_url += '?sslmode=require&pool_pre_ping=true&pool_recycle=300'
-        else:
-            db_url += '&sslmode=require&pool_pre_ping=true&pool_recycle=300'
-    
+        dsn_query = dict(parse_qsl(parsed.query, keep_blank_values=True))
+        invalid_dsn_keys = {
+            'pool_pre_ping',
+            'pool_recycle',
+            'pool_size',
+            'max_overflow',
+        }
+        cleaned_query = {k: v for k, v in dsn_query.items() if k not in invalid_dsn_keys}
+
+        # Ensure SSL for managed/remote postgres unless explicitly provided.
+        cleaned_query.setdefault('sslmode', 'require')
+        db_url = urlunparse(parsed._replace(query=urlencode(cleaned_query)))
+
+        _is_remote = True
+
     SQLALCHEMY_DATABASE_URI = db_url or 'postgresql://postgres:password@localhost:5432/deliveroo'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -23,7 +35,6 @@ class Config:
         'pool_recycle': 300,
         'pool_size': 5,
         'max_overflow': 10,
-        **({'connect_args': {'sslmode': 'require'}} if _is_remote else {}),
     }
     
     # JWT
