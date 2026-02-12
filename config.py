@@ -5,16 +5,12 @@ from urllib.parse import urlparse
 class Config:
     # Database - FIXED for Render PostgreSQL
     db_url = os.getenv('DATABASE_URL')
+    _is_remote = False
     if db_url:
         if db_url.startswith('postgres://'):
             db_url = db_url.replace('postgres://', 'postgresql://', 1)
-        # Add SSL for Render PostgreSQL
-        parsed = urlparse(db_url)
-        if not parsed.query:
-            db_url += '?sslmode=require'
-        else:
-            db_url += '&sslmode=require'
-    
+        _is_remote = True
+
     SQLALCHEMY_DATABASE_URI = db_url or 'postgresql://postgres:password@localhost:5432/deliveroo'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -22,6 +18,7 @@ class Config:
         'pool_recycle': 300,
         'pool_size': 5,
         'max_overflow': 10,
+        **({'connect_args': {'sslmode': 'require'}} if _is_remote else {}),
     }
     
     # JWT
