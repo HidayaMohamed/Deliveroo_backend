@@ -5,10 +5,12 @@ Handles M-Pesa STK Push initiation and callbacks
 Place this file in: app/routes/payments.py
 """
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.payment_service import get_mpesa_service
 from app.services.courier_assignment import auto_assign_courier
 from app.models.delivery import DeliveryOrder
 from app.models.payment import Payment, PaymentMethod, PaymentStatus
+from app.models.user import User
 from app import db
 import logging
 
@@ -265,6 +267,7 @@ def test_stk_push():
 
 
 @payments_bp.route('/orders/<int:order_id>/pay', methods=['POST'])
+@jwt_required()
 def pay_for_order(order_id):
     """
     Pay for an order via M-Pesa STK Push
@@ -277,12 +280,24 @@ def pay_for_order(order_id):
     data = request.get_json() or {}
     phone_number = data.get('phone_number')
 
+    current_user_id = int(get_jwt_identity())
+    current_user = User.query.get(current_user_id)
+
+    if not current_user:
+        return jsonify({'error': 'User not found'}), 404
+
+    if current_user.role != 'customer':
+        return jsonify({'error': 'Only customers can initiate order payments'}), 403
+
     if not phone_number:
         return jsonify({'error': 'Phone number is required'}), 400
 
     order = DeliveryOrder.query.get(order_id)
     if not order:
         return jsonify({'error': 'Order not found'}), 404
+
+    if order.user_id != current_user_id:
+        return jsonify({'error': 'You can only pay for your own orders'}), 403
 
     existing_payment = Payment.query.filter_by(order_id=order_id).first()
     if existing_payment and existing_payment.is_paid():
