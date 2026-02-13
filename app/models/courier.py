@@ -19,6 +19,11 @@ class CourierProfile(db.Model):
     # Stats
     total_deliveries = db.Column(db.Integer, default=0)
     rating = db.Column(db.Float, default=5.0)
+
+    # Live location
+    current_latitude = db.Column(db.Float, nullable=True)
+    current_longitude = db.Column(db.Float, nullable=True)
+    last_location_update = db.Column(db.DateTime, nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     

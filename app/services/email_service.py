@@ -116,19 +116,32 @@ The Deliveroo Team
             """
             
             mail.send(msg)
-            return {{
+            return {
                 'status': 'success', 
                 'message': f'Email sent successfully for status: {status}',
                 'order_id': order_id,
                 'recipient': user_email
-            }}
+            }
             
         except Exception as e:
-            return {{
+            return {
                 'status': 'error', 
-                'message': f'Failed to send status email: {{str(e)}}',
+                'message': f'Failed to send status email: {str(e)}',
                 'error_type': type(e).__name__
-            }}
+            }
+
+    @staticmethod
+    def send_status_update(user_email, order_id, status, user_name="Customer"):
+        """
+        Compatibility helper used by courier routes.
+        Delegates to send_status_email.
+        """
+        return EmailService.send_status_email(
+            user_email=user_email,
+            user_name=user_name,
+            order_id=order_id,
+            status=status,
+        )
     
     
     @staticmethod

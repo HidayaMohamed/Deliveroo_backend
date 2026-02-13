@@ -8,6 +8,7 @@ from datetime import datetime
 
 from extensions import db
 from app.models.user import User
+from app.models.courier import CourierProfile
 from app.models.delivery import DeliveryOrder, OrderStatus
 from app.models.order_tracking import OrderTracking
 from app.models.notification import Notification
@@ -291,6 +292,13 @@ class CourierUpdateLocationResource(Resource):
             # Update order's current location
             order.current_latitude = latitude
             order.current_longitude = longitude
+
+            # Update courier profile live location
+            courier_profile = CourierProfile.query.filter_by(user_id=current_user_id).first()
+            if courier_profile:
+                courier_profile.current_latitude = latitude
+                courier_profile.current_longitude = longitude
+                courier_profile.last_location_update = datetime.utcnow()
             
             # Create tracking point
             tracking = OrderTracking(

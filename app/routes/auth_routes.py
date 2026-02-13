@@ -69,8 +69,9 @@ class RegisterResource(Resource):
             db.session.add(user)
             db.session.commit()
 
-            access_token = create_access_token(identity=str(user.id))
-            refresh_token = create_refresh_token(identity=str(user.id))
+            claims = {"role": user.role}
+            access_token = create_access_token(identity=str(user.id), additional_claims=claims)
+            refresh_token = create_refresh_token(identity=str(user.id), additional_claims=claims)
 
 
             return {
@@ -114,8 +115,9 @@ class LoginResource(Resource):
             if not user.check_password(password):
                 return {"error": "Invalid email or password"}, 401
 
-            access_token = create_access_token(identity=str(user.id))
-            refresh_token = create_refresh_token(identity=str(user.id))
+            claims = {"role": user.role}
+            access_token = create_access_token(identity=str(user.id), additional_claims=claims)
+            refresh_token = create_refresh_token(identity=str(user.id), additional_claims=claims)
 
             return {
                 "message": "Login successful",
@@ -157,7 +159,8 @@ class RefreshResource(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
-        access_token = create_access_token(identity=str(user.id))
+        claims = {"role": user.role}
+        access_token = create_access_token(identity=str(user.id), additional_claims=claims)
 
         return {
             "access_token": access_token

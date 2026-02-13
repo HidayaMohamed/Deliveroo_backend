@@ -23,7 +23,13 @@ class Config:
         cleaned_query = {k: v for k, v in dsn_query.items() if k not in invalid_dsn_keys}
 
         # Ensure SSL for managed/remote postgres unless explicitly provided.
-        cleaned_query.setdefault('sslmode', 'require')
+        # For local postgres (localhost/127.0.0.1), disable SSL by default
+        # because many local setups do not support it.
+        host = (parsed.hostname or '').lower()
+        if host in {'localhost', '127.0.0.1', '::1'}:
+            cleaned_query.pop('sslmode', None)
+        else:
+            cleaned_query.setdefault('sslmode', 'require')
         db_url = urlunparse(parsed._replace(query=urlencode(cleaned_query)))
 
         _is_remote = True
@@ -52,3 +58,10 @@ class Config:
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@deliveroo.com')
+
+    # CORS
+    CORS_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv('CORS_ORIGINS', 'http://localhost:5173,https://deliveroo-frontend-two.vercel.app').split(',')
+        if origin.strip()
+    ]
