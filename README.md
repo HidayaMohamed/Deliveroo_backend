@@ -711,7 +711,3 @@ flask seed-db
 - [ ] Set up logging and monitoring
 - [ ] Regular security updates for dependencies
 
----
-
-If you'd like, I can also add a GitHub Actions workflow to run `pipenv run pytest` on each PR and ensure the test suite stays green.
->>>>>>> main
