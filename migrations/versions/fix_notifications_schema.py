@@ -7,6 +7,7 @@ Create Date: 2026-02-06 17:00:00.000000
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 
 # revision identifiers, used by Alembic.
@@ -17,19 +18,25 @@ depends_on = None
 
 
 def upgrade():
-    # Fix the notifications table schema mismatch
-    # The original migration created is_read as DateTime instead of Boolean
-    # and was missing the read_at column entirely
-    
+    # Make this migration idempotent for environments where schema drift already happened
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    cols = {c['name']: c for c in inspector.get_columns('notifications')}
+
+    needs_is_read_reset = False
+    if 'is_read' in cols:
+        # If is_read exists but not boolean, rebuild it
+        needs_is_read_reset = not isinstance(cols['is_read']['type'], sa.Boolean)
+
     with op.batch_alter_table('notifications', schema=None) as batch_op:
-        # Drop the incorrectly typed is_read column (DateTime -> Boolean)
-        batch_op.drop_column('is_read')
-        
-        # Add the correct is_read column as Boolean
-        batch_op.add_column(sa.Column('is_read', sa.Boolean(), nullable=True))
-        
-        # Add the missing read_at column
-        batch_op.add_column(sa.Column('read_at', sa.DateTime(), nullable=True))
+        if needs_is_read_reset:
+            batch_op.drop_column('is_read')
+            batch_op.add_column(sa.Column('is_read', sa.Boolean(), nullable=True))
+        elif 'is_read' not in cols:
+            batch_op.add_column(sa.Column('is_read', sa.Boolean(), nullable=True))
+
+        if 'read_at' not in cols:
+            batch_op.add_column(sa.Column('read_at', sa.DateTime(), nullable=True))
 
 
 def downgrade():
