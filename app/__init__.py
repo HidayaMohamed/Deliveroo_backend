@@ -1,15 +1,16 @@
-import os  
-from flask import Flask
+import os
 from flask import Flask
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_cors import CORS
-from config import Config
 from extensions import db, jwt
 from dotenv import load_dotenv
 
+# Load backend .env BEFORE importing Config (Config reads env at import time)
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-load_dotenv()
+from config import Config
 
 
 migrate = Migrate()
@@ -32,7 +33,7 @@ def create_app(config_class=Config):
     CORS(app,
          resources={
              r"/api/*": {
-                 "origins": ["https://deliveroo-frontend-two.vercel.app"],
+                 "origins": app.config.get("CORS_ORIGINS", ["http://localhost:5173"]),
                  "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
                  "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
                  "supports_credentials": True,

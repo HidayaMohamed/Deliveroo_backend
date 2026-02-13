@@ -10,10 +10,14 @@ from app.models.notification import Notification
 from app.models.order_tracking import OrderTracking
 from app.models.payment import Payment, PaymentMethod, PaymentStatus
 
-def seed_data():
+def seed_data(app=None):
     """🎉 ULTIMATE DELIVEROO SEED - ALL MODELS + VALIDATORS"""
-    
-    app = create_app()
+
+    # Reuse provided app when already inside application startup.
+    # This avoids creating a second app instance with possibly different env context.
+    if app is None:
+        app = create_app()
+
     print("🌱 Starting COMPLETE Deliveroo seeding...")
     
     with app.app_context():

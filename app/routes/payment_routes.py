@@ -6,6 +6,7 @@ Place this file in: app/routes/payments.py
 """
 from flask import Blueprint, request, jsonify
 from app.services.payment_service import get_mpesa_service
+from app.services.courier_assignment import auto_assign_courier
 from app.models.delivery import DeliveryOrder
 from app.models.payment import Payment, PaymentMethod, PaymentStatus
 from app import db
@@ -146,6 +147,16 @@ def mpesa_callback():
         
         logger.info(f"✅ Payment #{payment.id} successful! Receipt: {result.get('receipt_number')}")
         logger.info(f"   Order #{payment.order_id} is now paid")
+
+        # Auto-assign nearest available courier
+        assignment_result = auto_assign_courier(payment.order_id)
+        if assignment_result.get('success'):
+            logger.info(
+                f"✅ Auto-assigned courier #{assignment_result.get('courier_id')} "
+                f"to order #{payment.order_id} (distance: {assignment_result.get('distance_km')} km)"
+            )
+        else:
+            logger.warning(f"⚠️ Auto-assignment skipped for order #{payment.order_id}: {assignment_result.get('message')}")
         
         # TODO: Trigger email notification to customer
         # email_service.send_payment_confirmation(payment)
@@ -359,6 +370,12 @@ def simulate_callback():
             }
         )
         logger.info(f"SIMULATED: Payment #{payment.id} marked as PAID")
+
+        assignment_result = auto_assign_courier(payment.order_id)
+        if assignment_result.get('success'):
+            logger.info(f"SIMULATED: Auto-assigned courier #{assignment_result.get('courier_id')} to order #{payment.order_id}")
+        else:
+            logger.warning(f"SIMULATED: Auto-assignment skipped for order #{payment.order_id}: {assignment_result.get('message')}")
     else:
         payment.mark_as_failed(reason="Simulated Failure")
         logger.info(f"SIMULATED: Payment #{payment.id} marked as FAILED")

@@ -6,7 +6,7 @@ from decimal import Decimal
 from app import db
 from app.models.delivery import DeliveryOrder, OrderStatus
 from app.models.order_tracking import OrderTracking
-from app.models.payment import Payment
+from app.models.payment import Payment, PaymentStatus
 from app.models import User, Notification
 from app.services.pricing_service import PricingService
 from app.services.maps_service import MapsService
@@ -93,7 +93,7 @@ def create_order():
         payment = Payment(
             order_id=order.id,
             amount=order.total_price,
-            payment_status='PENDING'
+            payment_status=PaymentStatus.PENDING
         )
         db.session.add(payment)
         
@@ -141,10 +141,10 @@ def get_orders():
     page = int(request.args.get('page', 1))
     
     # Base query based on user role
-    if user.role == 'ADMIN':
+    if user.role == 'admin':
         query = DeliveryOrder.query
-    elif user.role == 'COURIER':
-        query = DeliveryOrder.query.filter_by(courier_id=user.courier_profile.id)
+    elif user.role == 'courier':
+        query = DeliveryOrder.query.filter_by(courier_id=current_user_id)
     else:
         query = DeliveryOrder.query.filter_by(user_id=current_user_id)
     
@@ -185,11 +185,11 @@ def get_order(order_id):
     order = DeliveryOrder.query.get_or_404(order_id)
     
     # Check permissions
-    if user.role == 'USER' and order.user_id != current_user_id:
+    if user.role == 'customer' and order.user_id != current_user_id:
         return jsonify({'error': 'Unauthorized access to this order'}), 403
     
-    if user.role == 'COURIER':
-        if not user.courier_profile or order.courier_id != user.courier_profile.id:
+    if user.role == 'courier':
+        if order.courier_id != current_user_id:
             return jsonify({'error': 'Unauthorized access to this order'}), 403
     
     # Get tracking history
@@ -317,11 +317,11 @@ def cancel_order(order_id):
     order = DeliveryOrder.query.get_or_404(order_id)
     
     # Check permissions
-    if user.role == 'USER' and order.user_id != current_user_id:
+    if user.role == 'customer' and order.user_id != current_user_id:
         return jsonify({'error': 'Unauthorized to cancel this order'}), 403
     
-    if user.role == 'COURIER':
-        if not user.courier_profile or order.courier_id != user.courier_profile.id:
+    if user.role == 'courier':
+        if order.courier_id != current_user_id:
             return jsonify({'error': 'Unauthorized to cancel this order'}), 403
     
     # Check if order can be cancelled
@@ -334,7 +334,7 @@ def cancel_order(order_id):
         
         # Update payment status
         if order.payment:
-            order.payment.payment_status = 'CANCELLED'
+            order.payment.payment_status = PaymentStatus.CANCELLED
         
         # Create tracking update
         tracking = OrderTracking(
