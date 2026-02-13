@@ -44,7 +44,7 @@ class User(db.Model, SerializerMixin):
             raise ValueError("Plate number must be at least 7 characters")
         return plate
 
-    serialize_rules = ("-password_hash",)
+    serialize_rules = ("-password_hash", "-orders", "-assigned_orders", "-courier_profile")
 
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
