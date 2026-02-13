@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 from sqlalchemy import Enum
-from app import db
+from extensions import db
 from decimal import Decimal
 
 class OrderStatus(PyEnum):

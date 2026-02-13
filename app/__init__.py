@@ -3,7 +3,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_cors import CORS
-from extensions import db, jwt
+from extensions import db, jwt, bcrypt
 from dotenv import load_dotenv
 
 # Load backend .env BEFORE importing Config (Config reads env at import time)
@@ -26,6 +26,7 @@ def create_app(config_class=Config):
     # Import models so Alembic can detect them
     from app import models
     jwt.init_app(app)
+    bcrypt.init_app(app)
     mail.init_app(app)
     
     # Configure CORS with proper settings for preflight requests
