@@ -8,7 +8,7 @@ A RESTful API for a parcel delivery management system built with Flask. Supports
 
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Setup & Installation](#setup--installation)
+- [Setup \& Installation](#setup--installation)
 - [Database Setup](#database-setup)
 - [Environment Variables](#environment-variables)
 - [Running the Server](#running-the-server)
@@ -22,10 +22,9 @@ A RESTful API for a parcel delivery management system built with Flask. Supports
 - [Services](#services)
 - [Role-Based Access Control](#role-based-access-control)
 - [Order Status Flow](#order-status-flow)
+- [Deployment](#deployment)
 
-2. Configure environment variables in `.env` (see `.env.example` file in repo). At minimum set:
-   - `DATABASE_URL` (example: `postgresql://postgres:password@localhost:5432/deliveroo`)
-   - `JWT_SECRET_KEY`
+---
 
 ## Tech Stack
 
@@ -49,39 +48,39 @@ A RESTful API for a parcel delivery management system built with Flask. Supports
 
 ```
 Deliveroo_backend/
-├── app/
-│   ├── __init__.py              # App factory, route registration, CORS config
-│   ├── models/
-│   │   ├── __init__.py          # Model exports
-│   │   ├── user.py              # User model (customer, courier, admin)
-│   │   ├── courier.py           # Courier profile model
-│   │   ├── delivery.py          # DeliveryOrder model, OrderStatus, WeightCategory
-│   │   ├── order_tracking.py    # GPS tracking history per order
-│   │   ├── payment.py           # Payment model (M-Pesa, card, cash)
-│   │   └── notification.py      # In-app notifications
-│   ├── routes/
-│   │   ├── auth_routes.py       # Register, login, me, refresh token
-│   │   ├── order_routes.py      # CRUD orders, tracking, price estimates
-│   │   ├── courier_routes.py    # Courier order management & location updates
-│   │   ├── admin_routes.py      # Admin dashboard, assign couriers, manage orders
-│   │   └── payment_routes.py    # M-Pesa STK push & callbacks
-│   ├── services/
-│   │   ├── email_service.py     # Email notifications (status, assignment, delivery)
-│   │   ├── maps_service.py      # Google Maps distance calculation
-│   │   ├── payment_service.py   # M-Pesa Daraja API integration
-│   │   └── pricing_service.py   # Delivery price calculation engine
-│   ├── utils/
-│   │   └── role_guards.py       # Role-based access decorators
-│   └── validators/
-│       └── order_validators.py  # Order creation & update validation
-├── migrations/                  # Alembic migration files
-├── app.py                       # Entry point with CLI commands & error handlers
-├── run.py                       # Minimal run script
-├── config.py                    # App configuration (DB, JWT, Mail, Maps)
-├── extensions.py                # SQLAlchemy, Bcrypt, JWT instances
-├── seed.py                      # Database seeding (admin, sample users)
-├── Pipfile                      # Dependencies
-└── .env                         # Environment variables (git-ignored)
+├── app.py                 # Main entry point with CLI commands & error handlers
+├── extensions.py          # SQLAlchemy, Bcrypt, JWT instances
+├── models.py              # Database models (User, DeliveryOrder, Payment, etc.)
+├── seed.py                # Database seeding script
+├── wsgi.py                # WSGI entry point for production
+├── Pipfile                # Pipenv dependencies
+├── requirements.txt       # Pip requirements
+├── Procfile               # Render.com deployment config
+├── pytest.ini             # Pytest configuration
+├── routes/
+│   ├── __init__.py
+│   ├── auth.py            # Register, login, me, refresh token
+│   ├── orders.py          # CRUD orders, tracking, price estimates
+│   ├── courier.py         # Courier order management & location updates
+│   ├── admin.py           # Admin dashboard, assign couriers, manage orders
+│   └── payments.py        # M-Pesa STK push & callbacks
+├── services/
+│   ├── __init__.py
+│   ├── cloudinary_service.py  # Image upload service
+│   ├── email_service.py       # Email notifications
+│   └── mpesa_service.py       # M-Pesa Daraja API integration
+├── utils/
+│   ├── __init__.py
+│   └── pdf.py             # PDF generation utilities
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py        # Pytest fixtures
+│   ├── test_auth.py       # Authentication tests
+│   ├── test_orders.py     # Orders tests
+│   ├── test_courier.py    # Courier tests
+│   └── test_admin.py      # Admin tests
+├── migrations/            # Alembic migration files
+└── instance/             # SQLite database (dev only)
 ```
 
 ---
@@ -140,7 +139,6 @@ sudo -u postgres createdb deliveroo
 
 ---
 
-<<<<<<< HEAD
 ## Environment Variables
 
 Create a `.env` file in the project root (already git-ignored):
@@ -172,6 +170,11 @@ MPESA_SHORTCODE=174379
 MPESA_PASSKEY=your-passkey
 MPESA_CALLBACK_URL=https://your-ngrok-url.ngrok.io/api/payments/callback
 
+# Cloudinary (for image uploads)
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+
 # Seed Data
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=adminpass
@@ -184,6 +187,7 @@ SAMPLE_PASSWORD=password
 - **M-Pesa Sandbox**: [Safaricom Daraja Portal](https://developer.safaricom.co.ke/) — register and create a sandbox app
 - **Gmail App Password**: Enable 2FA on your Google account, then generate an app password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 - **JWT Secret**: Generate one with `python -c "import secrets; print(secrets.token_hex(32))"`
+- **Cloudinary**: [Cloudinary Dashboard](https://cloudinary.com/)
 
 ---
 
@@ -194,7 +198,7 @@ SAMPLE_PASSWORD=password
 python app.py
 
 # Option 2: Minimal run
-python run.py
+python wsgi.py
 
 # Option 3: Flask CLI
 flask run
@@ -466,10 +470,6 @@ Supports three roles: `customer`, `courier`, `admin`. Couriers require `vehicle_
 
 Central model with pickup/destination coordinates, parcel details (weight, dimensions, fragile flag), full pricing breakdown, status tracking, and relationships to payment, tracking updates, and notifications.
 
-### CourierProfile
-
-Extended profile for couriers with vehicle info, verification status, total delivery count, and rating.
-
 ### Payment
 
 Tracks M-Pesa and card payments with transaction references, M-Pesa receipt numbers, checkout/merchant request IDs, and status lifecycle (PENDING -> PROCESSING -> PAID / FAILED / REFUNDED / CANCELLED).
@@ -486,21 +486,7 @@ In-app notifications for users about order updates, courier assignments, and sta
 
 ## Services
 
-### PricingService
-
-Calculates delivery prices based on:
-
-- **Base fare**: KES 150
-- **Distance rate**: KES 50/km (distance from Google Maps Distance Matrix API)
-- **Weight tiers**: Small (<5kg: KES 150), Medium (5-20kg: KES 300), Large (20-50kg: KES 500), XLarge (>50kg: KES 1000)
-- **Surcharges**: Fragile (+15%), Insurance (+10%), Express (+25%), Weekend (+20%)
-- **Estimated delivery time**: Based on 40 km/h normal, 60 km/h express + handling buffer
-
-### MapsService
-
-Wraps the Google Maps Distance Matrix API to calculate driving distance (km) and duration (minutes) between pickup and destination coordinates.
-
-### MpesaService (Payment Service)
+### MpesaService
 
 Full Safaricom M-Pesa Daraja API integration:
 
@@ -519,11 +505,15 @@ Sends transactional emails via Gmail SMTP:
 - **Courier assigned** — when admin assigns a courier to an order
 - **Delivery complete** — when order is marked as delivered
 
+### CloudinaryService
+
+Handles image uploads for delivery proof photos.
+
 ---
 
 ## Role-Based Access Control
 
-Access is enforced via JWT claims and decorator guards defined in `app/utils/role_guards.py`:
+Access is enforced via JWT claims and decorator guards:
 
 | Decorator                 | Allowed Roles  | Used In         |
 | ------------------------- | -------------- | --------------- |
@@ -532,7 +522,7 @@ Access is enforced via JWT claims and decorator guards defined in `app/utils/rol
 | `@customer_required`      | customer       | Customer routes |
 | `@admin_courier_required` | admin, courier | Shared routes   |
 
-The user's role is automatically embedded in the JWT token via the `additional_claims_loader` in `extensions.py`. The decorators verify the claim on each request.
+The user's role is automatically embedded in the JWT token. The decorators verify the claim on each request.
 
 ---
 
@@ -556,157 +546,8 @@ CANCELLED   CANCELLED   CANCELLED
 
 ---
 
+
+
 ## License
 
 This project is part of a Phase 5 capstone project.
-=======
-## Deployment to Render.com
-
-This application is configured for easy deployment to Render.com.
-
-### Prerequisites
-
-1. A [Render.com](https://render.com) account
-2. A [Safaricom Developer Portal](https://developer.safaricom.co.ke) account for M-Pesa
-3. A [Google Cloud](https://console.cloud.google.com/) account for Maps API
-
-### Step 1: Push to GitHub
-
-Push your code to a GitHub repository:
-
-```bash
-git add .
-git commit -m "Prepare for production deployment"
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-git push -u origin main
-```
-
-### Step 2: Create Render Web Service
-
-1. Go to [Render Dashboard](https://dashboard.render.com)
-2. Click **New +** → **Web Service**
-3. Connect your GitHub repository
-4. Configure the service:
-   - **Name**: `deliveroo-api` (or your preferred name)
-   - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn --chdir /Users/andrewsigei/Development/phase_5/project/Deliveroo_backend app:app`
-   - **Plan**: Select appropriate plan (Free tier available)
-
-### Step 3: Create PostgreSQL Database
-
-1. Go to [Render Dashboard](https://dashboard.render.com)
-2. Click **New +** → **PostgreSQL**
-3. Configure:
-   - **Name**: `deliveroo-db` (or your preferred name)
-   - **Database Name**: `deliveroo`
-   - **User**: `deliveroo`
-4. Click **Create Database**
-
-### Step 4: Configure Environment Variables
-
-In your Web Service settings, add the following environment variables:
-
-#### Required:
-| Variable | Value |
-|----------|-------|
-| `DATABASE_URL` | (Auto-provided by Render - connect from PostgreSQL service) |
-| `JWT_SECRET_KEY` | `python -c "import secrets; print(secrets.token_hex(32))"` (generate secure random) |
-| `FLASK_ENV` | `production` |
-
-#### M-Pesa (Required for payments):
-| Variable | Value |
-|----------|-------|
-| `MPESA_ENVIRONMENT` | `sandbox` (change to `production` when ready) |
-| `MPESA_CONSUMER_KEY` | From Safaricom Developer Portal |
-| `MPESA_CONSUMER_SECRET` | From Safaricom Developer Portal |
-| `MPESA_SHORTCODE` | Your Till Number or Paybill |
-| `MPESA_PASSKEY` | From Safaricom Developer Portal |
-| `MPESA_CALLBACK_URL` | `https://YOUR_SERVICE.onrender.com/api/payments/callback` |
-
-#### Google Maps (Required for distance calculations):
-| Variable | Value |
-|----------|-------|
-| `GOOGLE_MAPS_API_KEY` | From Google Cloud Console |
-
-#### Optional (Customize):
-| Variable | Value |
-|----------|-------|
-| `CORS_ORIGINS` | `http://localhost:5173,https://your-frontend.com` |
-| `ADMIN_EMAIL` | `admin@your-domain.com` |
-| `ADMIN_PASSWORD` | `secure-password-here` |
-
-### Step 5: Run Database Migrations
-
-1. In Render Dashboard, go to your Web Service
-2. Click **Manual Deploy** → **Deploy latest commit**
-3. Or use the **Shell** to run migrations:
-   ```bash
-   flask db upgrade
-   ```
-
-### Step 6: Seed Initial Data
-
-```bash
-flask seed-db
-```
-
-### Step 7: Verify Deployment
-
-1. Visit `https://YOUR_SERVICE.onrender.com/health`
-2. You should see: `{"status": "healthy", ...}`
-3. Test the API endpoints with Postman or your frontend
-
-### Troubleshooting
-
-#### "ModuleNotFoundError" during build
-- Ensure `requirements.txt` is up to date
-- Check that all dependencies are listed
-
-#### Database connection errors
-- Verify `DATABASE_URL` is correctly set in environment variables
-- Ensure PostgreSQL service is running
-- Check that the database user has correct permissions
-
-#### M-Pesa callback not working
-- Ensure `MPESA_CALLBACK_URL` is publicly accessible
-- For local testing, use [ngrok](https://ngrok.com/) to expose your local server
-- Update `MPESA_CALLBACK_URL` when switching between sandbox and production
-
-#### CORS errors
-- Add your frontend domain to `CORS_ORIGINS` environment variable
-- Format: `https://domain1.com,https://domain2.com`
-
----
-
-## Testing M-Pesa in Sandbox
-
-1. Use sandbox credentials from [Safaricom Developer Portal](https://developer.safaricom.co.ke)
-2. Test phone numbers: Use `254700000000` format (Safaricom test numbers)
-3. Use PIN `0812` when prompted on phone
-4. Check [M-Pesa Test Tool](https://developer.safaricom.co.ke/test-tools) for more details
-
----
-
-## Switching to Production M-Pesa
-
-1. Get production credentials from Safaricom
-2. Update environment variables:
-   - `MPESA_ENVIRONMENT=production`
-   - Update `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_PASSKEY`
-   - Update `MPESA_CALLBACK_URL` to your production URL
-3. Test with real transactions using small amounts
-
----
-
-## Security Checklist for Production
-
-- [ ] Change all default passwords
-- [ ] Set strong `JWT_SECRET_KEY` (32+ random characters)
-- [ ] Enable M-Pesa only in production mode
-- [ ] Use HTTPS for all communications
-- [ ] Restrict `CORS_ORIGINS` to your frontend domain
-- [ ] Enable rate limiting (consider Flask-Limiter)
-- [ ] Set up logging and monitoring
-- [ ] Regular security updates for dependencies
-
