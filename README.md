@@ -127,8 +127,7 @@ python seed.py
 If you don't want to install Postgres for quick local testing:
 
 ```bash
-export DATABASE_URL="sqlite:///dev.db"
-python seed.py
+sudo -u postgres createdb deliveroo
 ```
 
 ### Default Seed Users
