@@ -52,3 +52,87 @@ def send_magic_link(user_email, magic_link_url):
    </div>
    """
    return send_email(user_email, subject, html_content)
+
+
+
+
+
+
+def send_payment_success_email(user_email, order_id, amount, pdf_buffer):
+   subject = f"Payment Successful - Order #{order_id}"
+   html_content = f"""
+   <div style="font-family: Arial, sans-serif; padding: 20px;">
+       <h2>Payment Received!</h2>
+       <p>Your payment of <strong>KES {amount}</strong> for Order #{order_id} has been successfully received.</p>
+       <p>Please find your receipt attached.</p>
+       <p>Thank you for choosing Deliveroo!</p>
+   </div>
+   """
+  
+   # Check if pdf_buffer is bytes or buffer
+   if hasattr(pdf_buffer, 'getvalue'):
+       content = pdf_buffer.getvalue()
+   else:
+       content = pdf_buffer
+      
+   attachments = [{
+       "filename": f"receipt_order_{order_id}.pdf",
+       "content": list(content)
+   }]
+  
+   return send_email(user_email, subject, html_content, attachments)
+
+
+def send_order_created_email(user_email, order_details):
+   subject = f"Order #{order_details['id']} Created - Delivery Code Inside"
+   html_content = f"""
+   <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+       <h2>Order Created Successfully!</h2>
+       <p>Your order for <strong>{order_details['parcel_name']}</strong> has been created.</p>
+       <p><strong>Tracking ID:</strong> #{order_details['id']}</p>
+      
+       <div style="background-color: #fee2e2; padding: 15px; border-left: 5px solid #dc2626; margin: 20px 0; border-radius: 4px;">
+           <p style="margin: 0; color: #991b1b; font-weight: bold; text-transform: uppercase;">Security Alert</p>
+           <p style="margin-top: 10px; color: #7f1d1d;">
+               Your Delivery Confirmation Code is: <span style="font-size: 1.5em; font-weight: bold; background: white; padding: 2px 8px; border-radius: 4px; border: 1px solid #fecaca;">{order_details['delivery_code']}</span>
+           </p>
+           <p style="margin-top: 10px; font-size: 0.9em; color: #7f1d1d;">
+               <strong>DO NOT SHARE</strong> this code until the courier physically arrives to deliver your parcel. The courier will ask for this code to complete the delivery.
+           </p>
+       </div>
+
+
+       <p>We will notify you via email when a courier accepts your order.</p>
+       <a href="{os.environ.get('FRONTEND_URL', 'http://localhost:5173')}/orders/{order_details['id']}" style="background-color: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Track Order</a>
+   </div>
+   """
+   return send_email(user_email, subject, html_content)
+
+
+
+
+def send_order_status_email(user_email, order_id, status, parcel_name):
+   status_messages = {
+       "assigned": "has been assigned a courier.",
+       "picked_up": "has been picked up by the courier.",
+       "in_transit": "is on its way!",
+       "delivered": "has been delivered successfully!",
+       "cancelled": "has been cancelled."
+   }
+  
+   status_message = status_messages.get(status, f"status has been updated to: {status}")
+  
+   subject = f"Order #{order_id} Update: {status.replace('_', ' ').title()}"
+   html_content = f"""
+   <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+       <h2>Order Status Update</h2>
+       <p>Your order <strong>#{order_id}</strong> ({parcel_name}) {status_message}</p>
+      
+       <div style="margin-top: 20px;">
+           <p>Current Status: <strong style="text-transform: uppercase; color: #f97316;">{status.replace('_', ' ')}</strong></p>
+       </div>
+      
+       <a href="{os.environ.get('FRONTEND_URL', 'http://localhost:5173')}/orders/{order_id}" style="background-color: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px;">Track Order</a>
+   </div>
+   """
+   return send_email(user_email, subject, html_content)
