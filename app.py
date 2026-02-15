@@ -46,7 +46,7 @@ def create_app(config=None):
            "origins": [
                "http://localhost:5173",
                "http://localhost:3000",
-               "https://deliveroo-frontend-ten.vercel.app"
+               "https://deliveroo-frontend-two.vercel.app"
            ],
            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
            "allow_headers": ["Content-Type", "Authorization"]
